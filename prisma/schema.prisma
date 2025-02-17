@@ -1,0 +1,206 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  username      String?         @unique
+  email         String          @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  public_key    String?
+  private_key   String?
+  role          Role            @default(USER)
+  id_cliente    String? @unique
+  cliente       Clientes?  @relation(fields: [id_cliente], references: [id])
+  accounts      Account[]
+  sessions      Session[]
+  // Optional for WebAuthn support
+  Authenticator Authenticator[]
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+ 
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+ 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  @@id([provider, providerAccountId])
+}
+ 
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+ 
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+ 
+  @@id([identifier, token])
+}
+ 
+// Optional for WebAuthn support
+model Authenticator {
+  credentialID         String  @unique
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+ 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  @@id([userId, credentialID])
+}
+enum Role {
+  ADMIN
+  MODERATOR
+  USER
+}
+
+model Clientes {
+  id              String    @id @default(cuid())
+  nome            String
+  cpf             String?   @unique
+  data_nascimento DateTime
+  cnpj            String?   @unique
+  fixo            String?
+  celular         String?
+  saldo           Decimal   @db.Money
+  id_endereco     String
+  Endereco        Endereco? @relation(fields: [id_endereco], references: [id])
+  user  User?
+  email Email[]
+}
+
+model Email {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  id_cliente    String?
+  id_fornecedor String?
+  Cliente       Clientes?     @relation(fields: [id_cliente], references: [id])
+  Fornecedor    Fornecedor? @relation(fields: [id_fornecedor], references: [id])
+}
+
+model Fornecedor {
+  id        String  @id @default(cuid())
+  nome      String
+  cnpj      String? @unique
+  cpf       String? @unique
+  ramo      RamoEmpresa
+  Email Email[]
+  Produtos Produtos[]
+}
+
+model Endereco {
+  id          String     @id @default(cuid())
+  cep         String
+  logradouro  String
+  numero      Int
+  complemento String
+  bairro      String
+  cidade      String
+  uf          UF         @default(SP)
+  clientes    Clientes[]
+}
+
+model Produtos {
+  id          String     @id @default(cuid())
+  image_url   String
+  nome        String
+  descricao   String
+  preco       Decimal
+  estoque     Int
+  id_marca    String
+  marca       Marca @relation(fields: [id_marca] , references: [id])
+  id_tipo     String
+  tipo        TipoProduto @relation(fields: [id_tipo] , references: [id])
+  id_fornecedor String
+  Fornecedor  Fornecedor @relation(fields: [id_fornecedor], references: [id])
+}
+
+model Marca {
+  id        String  @id @default(cuid())
+  nome      String
+  descricao String
+  Produtos  Produtos[]
+}
+
+model TipoProduto {
+  id        String  @id @default(cuid())
+  nome      String
+  descricao String
+  Produtos  Produtos[]
+}
+
+enum RamoEmpresa {
+  PRODUTOS_DE_HIGIENE_PESSOAL_E_COSMETICOS
+}
+
+enum UF {
+  AC
+  AL
+  AM
+  AP
+  BA
+  CE
+  DF
+  ES
+  GO
+  MA
+  MG
+  MS
+  MT
+  PA
+  PB
+  PE
+  PI
+  PL
+  PR
+  RJ
+  RN
+  RO
+  RR
+  RS
+  SC
+  SE
+  SP
+  TO
+}
