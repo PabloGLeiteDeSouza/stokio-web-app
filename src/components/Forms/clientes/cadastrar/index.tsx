@@ -336,7 +336,6 @@ const FormCadastrarClientes: React.FC = () => {
                     size="md"
                     defaultValue={values.saldo}
                     value={values.saldo}
-                    onChange={handleChange("saldo")}
                     onValueChange={({ value }) => {
                       setFieldValue("saldo", value)
                     }}
