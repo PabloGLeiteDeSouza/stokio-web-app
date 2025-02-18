@@ -1,7 +1,7 @@
 import BreadCumb from "@/components/Breadcump";
 import Dashboard from "@/components/dashboard";
 import FormCadastrarClientes from "@/components/Forms/clientes/cadastrar";
-import { Box, Heading, Stack } from "@chakra-ui/react";
+import { Box, Stack } from "@chakra-ui/react";
 
 export default function CadastrarClientes() {
     return (

@@ -4,7 +4,6 @@ import { Field } from "@/components/ui/field";
 import {
   SelectContent,
   SelectItem,
-  SelectLabel,
   SelectRoot,
   SelectTrigger,
   SelectValueText,
@@ -19,10 +18,7 @@ import {
 } from "@chakra-ui/react";
 import { Formik } from "formik";
 import { withMask } from "use-mask-input";
-import {
-  NumberInputField,
-  NumberInputRoot,
-} from "@/components/ui/number-input";
+import { NumberInputField, NumberInputRoot } from "@/components/ui/number-input"
 import { Toaster, toaster } from "@/components/ui/toaster";
 import { useRouter } from "next/navigation";
 import convertCurrencyBrlToNumber from "@/utils/convert-currency-brl";
@@ -80,7 +76,6 @@ const FormCadastrarClientes: React.FC = () => {
       }}
       onSubmit={async (values) => {
         try {
-          console.log(values);
           const res = await fetch("/api/clientes", {
             method: "POST",
             body: JSON.stringify(values),
@@ -108,6 +103,7 @@ const FormCadastrarClientes: React.FC = () => {
             duration: 1500,
           });
         } catch (error) {
+          console.error(error)
           toaster.create({
             title: "Erro ao cadastrar cliente",
             description: (error as Error).message,
@@ -116,7 +112,7 @@ const FormCadastrarClientes: React.FC = () => {
         }
       }}
     >
-      {({ handleChange, setFieldValue, handleSubmit, values, errors }) => {
+      {({ handleChange, setFieldValue, handleSubmit, handleBlur, values, errors }) => {
         const buscarCep = async (cep: string) => {
           try {
             const res = await fetch(
@@ -324,31 +320,27 @@ const FormCadastrarClientes: React.FC = () => {
                 </Field>
               </GridItem>
               <GridItem colSpan={1}>
-                <Field
-                  required
-                  label="Saldo"
-                  helperText="Informe o saldo do cliente"
-                  invalid={!errors.saldo && undefined}
-                  errorText={errors.saldo}
+              <Field
+                required
+                label="Saldo"
+                helperText="Informe o saldo do cliente"
+                invalid={!!errors.saldo}
+                errorText={errors.saldo}
+              >
+                <NumberInputRoot
+                  w="full"
+                  value={values.saldo}
+                  formatOptions={{
+                    style: "currency",
+                    currency: "BRL",
+                    currencyDisplay: "symbol",
+                    currencySign: "accounting",
+                  }}
+                  onValueChange={({ value }) => setFieldValue('saldo', value)}
                 >
-                  <NumberInputRoot
-                    w="full"
-                    size="md"
-                    defaultValue={values.saldo}
-                    value={values.saldo}
-                    onValueChange={({ value }) => {
-                      setFieldValue("saldo", value)
-                    }}
-                    formatOptions={{
-                      style: "currency",
-                      currency: "BRL",
-                      currencyDisplay: "symbol",
-                      currencySign: "accounting",
-                    }}
-                  >
-                    <NumberInputField />
-                  </NumberInputRoot>
-                </Field>
+                  <NumberInputField onBlur={handleBlur("saldo")} />
+                </NumberInputRoot>
+              </Field>
               </GridItem>
               <GridItem colSpan={2}>
                 <HStack justifyContent="center" w="full">

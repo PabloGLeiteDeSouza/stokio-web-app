@@ -13,13 +13,6 @@ export async function POST(req: NextRequest) {
     // Create the new client with nested relations
     const resp = await prisma.clientes.create({
       data: {
-        nome: data.nome,
-        data_nascimento: new Date(data.data_nascimento),
-        cpf: data.cpf,
-        cnpj: data.cnpj ?? null, // Se não houver cnpj no form, usar null
-        fixo: data.fixo || null,
-        celular: data.celular || null,
-        saldo: saldoDecimal, // ou new Prisma.Decimal(saldoDecimal)
         Endereco: {
           create: {
             cep: data.cep,
@@ -31,6 +24,13 @@ export async function POST(req: NextRequest) {
             uf: data.uf || "SP",
           },
         },
+        nome: data.nome,
+        data_nascimento: new Date(data.data_nascimento),
+        cpf: data.cpf,
+        cnpj: data.cnpj ?? null, // Se não houver cnpj no form, usar null
+        fixo: data.fixo || null,
+        celular: data.celular || null,
+        saldo: saldoDecimal, // ou new Prisma.Decimal(saldoDecimal)
         email: {
           create: {
             email: data.email,
