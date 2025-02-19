@@ -2,9 +2,12 @@
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { SelectContent, SelectItem, SelectLabel, SelectRoot, SelectTrigger, SelectValueText } from "@/components/ui/select";
-import { Box, createListCollection, Grid, Input, VStack } from "@chakra-ui/react";
+import { toaster, Toaster } from "@/components/ui/toaster";
+import { Box, createListCollection, For, Grid, GridItem, HStack, IconButton, Input, VStack } from "@chakra-ui/react";
 import { $Enums } from "@prisma/client";
 import { Formik } from "formik";
+import { useRouter } from "next/navigation";
+import { FaMinus, FaPlus } from "react-icons/fa6";
 import { withMask } from "use-mask-input";
 
 const FormCadastrarFornecedores: React.FC = () => {
@@ -19,25 +22,62 @@ const FormCadastrarFornecedores: React.FC = () => {
             { label: "Pessoa Física", value: "PF" },
         ]
     })
+    const navigation = useRouter()
+
     return (
         <Formik
             initialValues={{
                 nome: "",
                 tipo_pessoa: "" as "PJ" | "PF",
-                tipo_fornecedor: "",
+                ramo: "",
                 cpf: "",
                 cnpj: "",
+                emails: [{ email: "" }],
             }} 
-            onSubmit={async (values) => {
-
+            onSubmit={async ({ nome, cnpj, cpf, ramo, emails }) => {
+                try {
+                    const res = await fetch("/api/fornecedores", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ nome, cnpj, cpf, ramo, emails }),
+                    });
+                    console.log("resp", res);
+                    const data = await res.json();
+                    console.log("data", data);
+                    if (res.status !== 201) {
+                        throw new Error(data.error);
+                    }
+                    if (!data) {
+                        throw new Error("Erro ao cadastrar fornecedor");
+                    }
+                    toaster.create({ 
+                        title: "Fornecedor cadastrado com sucesso!", 
+                        description: "Fornecedor cadastrado com sucesso!", 
+                        type: "success" ,
+                        async onStatusChange(details) {
+                            if (details.status === "unmounted") {
+                                navigation.push("/dashboard/fornecedores");
+                            }
+                        },
+                        duration: 2000
+                    });
+                } catch (error) {
+                    toaster.create({
+                        title: "Erro ao cadastrar fornecedor",
+                        description: (error as Error).message,
+                        type: "error" 
+                    });
+                }
             }}>
-            {({ setFieldValue, handleChange, handleSubmit, values }) => {
+            {({ setFieldValue, handleChange, handleSubmit, values, errors }) => {
                 return (
-                    <VStack w="full" asChild>
+                    <VStack suppressHydrationWarning w="full" asChild>
                         <form onSubmit={handleSubmit}>
-                            <Grid w="full" templateColumns="repeat(2, 1fr)" gap="6">
+                            <Grid suppressHydrationWarning w="full" templateColumns="repeat(2, 1fr)" gap="6">
                                 <Field label="Nome" helperText="This is a helper text">
-                                    <Input onChange={handleChange("nome")} type="text" placeholder="dsasdasdasdas" />
+                                    <Input onChange={handleChange("nome")} type="text" placeholder="ex Natura" />
                                 </Field>
                                 <SelectRoot onValueChange={(details) => setFieldValue("tipo_pessoa", details.value[0])} collection={tipo_fornecedor}>
                                     <SelectLabel>Tipo de pessoa</SelectLabel>
@@ -63,7 +103,7 @@ const FormCadastrarFornecedores: React.FC = () => {
                                     </Field>
                                 )}
                                 
-                                <SelectRoot onValueChange={(details) => setFieldValue("tipo_fornecedor", details.value[0])} collection={tipos_de_empresas}>
+                                <SelectRoot onValueChange={(details) => setFieldValue("ramo", details.value[0])} collection={tipos_de_empresas}>
                                     <SelectLabel>Tipos de Fornecedor</SelectLabel>
                                         <SelectTrigger>
                                     <SelectValueText placeholder="Selecione o tipo da empresa" />
@@ -76,8 +116,43 @@ const FormCadastrarFornecedores: React.FC = () => {
                                         ))}
                                     </SelectContent>
                                 </SelectRoot>
+                                <For each={values.emails}>
+                                    {(item, i) => {
+                                        if (i + 1 == values.emails.length) {
+                                            return (
+                                                <HStack key={i}>
+                                                    <IconButton colorPalette="green" onClick={() => setFieldValue("emails", [...values.emails, { email: "" }])}>
+                                                        <FaPlus />
+                                                    </IconButton>
+                                                    <Field label={`E-mail-${i + 1}`} helperText="Informe um email válido">
+                                                        <Input value={item.email} type="email" onChange={handleChange(`emails[${i}].email`)} />
+                                                    </Field>
+                                                    <IconButton disabled={i == 0 && true} colorPalette="red" onClick={() => {
+                                                        if (values.emails.length > 1) {
+                                                            setFieldValue("emails", [...values.emails.slice(0, -1)])
+                                                        } else {
+                                                            toaster.create({
+                                                                title: "Atenção",
+                                                                description: "Não é possível remover o último e-mail",
+                                                                type: "warning",
+                                                                duration: 1500,
+                                                            })
+                                                        }
+                                                    }} >
+                                                        <FaMinus />
+                                                    </IconButton>
+                                                </HStack>
+                                            )
+                                        }
+                                        return (
+                                            <Field key={i} label={`E-mail-${i + 1}`} helperText="Informe um email válido">
+                                                <Input value={item.email} type="email" onChange={handleChange(`emails[${i}].email`)} />
+                                            </Field>
+                                        )
+                                    }}
+                                </For>
                             </Grid>
-                            {values.nome !== "" && values.tipo_fornecedor !== "" && values.tipo_pessoa === "PF" || values.tipo_pessoa === "PJ" && values.cnpj !== "" || values.cpf !== "" ? (
+                            {values.nome !== "" && values.ramo !== "" && values.tipo_pessoa === "PF" || values.tipo_pessoa === "PJ" && values.cnpj !== "" || values.cpf !== "" ? (
                                 <Box w="full">
                                     <Button w="full" type="submit">
                                         Cadastrar
@@ -86,6 +161,7 @@ const FormCadastrarFornecedores: React.FC = () => {
                             ) : (
                                 <></>
                             )}
+                        <Toaster />
                         </form>
                     </VStack>
                 );

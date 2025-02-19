@@ -37,6 +37,8 @@ export async function POST(req: NextRequest) {
           },
         },
       },
+    }).catch(() => {
+      return null;
     });
 
     if (!resp) {

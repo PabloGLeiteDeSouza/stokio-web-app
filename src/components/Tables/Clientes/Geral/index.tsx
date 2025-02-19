@@ -110,151 +110,153 @@ const TableClientes: React.FC = () => {
   const visibleClients = clientes.slice(startRange, endRange);
 
   return (
-    <Stack suppressHydrationWarning h="calc(100% - 20px)" py="2.5">
-      {/* Cabeçalho com botão Criar e Seleção de página */}
-      {clientes.length > 0 && (
-        <HStack justifyContent="space-between">
-          <Box>
-            <LinkButton colorPalette="cyan" variant="solid" asChild>
-              <Link href="/dashboard/clientes/cadastrar">
-                <FaPlus /> Criar Cliente
-              </Link>
-            </LinkButton>
-          </Box>
-          
+    <Skeleton suppressHydrationWarning loading={isLoading}>
+      <Stack suppressHydrationWarning h="calc(100% - 20px)" py="2.5">
+        {/* Cabeçalho com botão Criar e Seleção de página */}
+        {clientes.length > 0 && (
+          <HStack justifyContent="space-between">
             <Box>
-              <SelectQuantidadePaginas
-                value={`${pageSize}`}
-                onChange={(value) => setPageSize(Number(value))}
-              />
-            </Box>
-        </HStack>
-      )}
-      {/* Tabela com Skeleton de carregamento */}
-      {clientes.length > 0 ? (
-        <>
-          <ChakraTable.ScrollArea suppressHydrationWarning borderWidth="1px" rounded="md" maxHeight="md">
-            <ChakraTable.Root size="sm" stickyHeader>
-              <ChakraTable.Header>
-                <ChakraTable.Row bg="bg.subtle">
-                  <ChakraTable.ColumnHeader>Nome</ChakraTable.ColumnHeader>
-                  <ChakraTable.ColumnHeader>CPF</ChakraTable.ColumnHeader>
-                  <ChakraTable.ColumnHeader>Saldo</ChakraTable.ColumnHeader>
-                  <ChakraTable.ColumnHeader>Editar</ChakraTable.ColumnHeader>
-                  <ChakraTable.ColumnHeader>Excluir</ChakraTable.ColumnHeader>
-                </ChakraTable.Row>
-              </ChakraTable.Header>
-
-              <ChakraTable.Body>
-                {isLoading ? (
-                  // Exibe Skeletons durante o carregamento
-                  Array.from({ length: pageSize }).map((_, index) => (
-                    <ChakraTable.Row key={index}>
-                      <ChakraTable.Cell>
-                        <Skeleton height="20px" />
-                      </ChakraTable.Cell>
-                      <ChakraTable.Cell>
-                        <Skeleton height="20px" />
-                      </ChakraTable.Cell>
-                      <ChakraTable.Cell>
-                        <Skeleton height="20px" />
-                      </ChakraTable.Cell>
-                      <ChakraTable.Cell>
-                        <Skeleton height="20px" />
-                      </ChakraTable.Cell>
-                      <ChakraTable.Cell>
-                        <Skeleton height="20px" />
-                      </ChakraTable.Cell>
-                    </ChakraTable.Row>
-                  ))
-                ) : (
-                  // Exibe dados carregados
-                  visibleClients.map((cliente) => (
-                    <ChakraTable.Row key={cliente.id}>
-                      <ChakraTable.Cell>{cliente.nome}</ChakraTable.Cell>
-                      <ChakraTable.Cell>{cliente.cpf}</ChakraTable.Cell>
-                      <ChakraTable.Cell>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(cliente.saldo))}</ChakraTable.Cell>
-                      <ChakraTable.Cell>
-                        <LinkButton colorPalette="blue" asChild>
-                          <Link href={`/clientes/editar/${cliente.id}`}>
-                            <FaPencil />
-                          </Link>
-                        </LinkButton>
-                      </ChakraTable.Cell>
-                      <ChakraTable.Cell>
-                      <DialogRoot size={"md"}>
-                        <DialogTrigger asChild>
-                          <Button colorPalette="red">
-                            <FaTrash />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Dialog Title</DialogTitle>
-                          </DialogHeader>
-                          <DialogBody>
-                            <p>
-                            Você tem certeza que deseja excluir o cliente {cliente.nome}?
-                            </p>
-                          </DialogBody>
-                          <DialogFooter>
-                            <DialogActionTrigger asChild>
-                              <Button colorPalette="blue">Cancel</Button>
-                            </DialogActionTrigger>
-                            <Button onClick={async () => await deleteCliente(cliente.id as string)} colorPalette="red">
-                              Confirm
-                            </Button>
-                          </DialogFooter>
-                          <DialogCloseTrigger />
-                        </DialogContent>
-                      </DialogRoot>
-                      </ChakraTable.Cell>
-                    </ChakraTable.Row>
-                  ))
-                )}
-              </ChakraTable.Body>
-            </ChakraTable.Root>
-          </ChakraTable.ScrollArea>
-
-          {/* Paginação */}
-          <HStack justifyContent="center">
-            <PaginationRoot
-              count={clientes.length}
-              pageSize={pageSize}
-              page={page}
-              onPageChange={(event) => setPage(event.page)}
-            >
-              <HStack>
-                <PaginationPrevTrigger />
-                <PaginationItems />
-                <PaginationNextTrigger />
-              </HStack>
-            </PaginationRoot>
-          </HStack>
-        </>
-      ) : (
-        <EmptyState.Root h="full">
-          <EmptyState.Content h="full" w="full">
-            <EmptyState.Indicator>
-              <FaPerson />
-            </EmptyState.Indicator>
-            <VStack textAlign="center">
-              <EmptyState.Title>Não há mais clientes</EmptyState.Title>
-              <EmptyState.Description>
-                Adicione mais clientes
-              </EmptyState.Description>
-            </VStack>
-            <ButtonGroup>
-              <LinkButton as={Link} href="/dashboard/clientes/cadastrar" variant="outline">
-                <FaPlus />
-                Cadastrar Clientes
+              <LinkButton colorPalette="cyan" variant="solid" asChild>
+                <Link href="/dashboard/clientes/cadastrar">
+                  <FaPlus /> Criar Cliente
+                </Link>
               </LinkButton>
-            </ButtonGroup>
-          </EmptyState.Content>
-        </EmptyState.Root>
-      )}
-      <Toaster />
-    </Stack>
+            </Box>
+            
+              <Box>
+                <SelectQuantidadePaginas
+                  value={`${pageSize}`}
+                  onChange={(value) => setPageSize(Number(value))}
+                />
+              </Box>
+          </HStack>
+        )}
+        {/* Tabela com Skeleton de carregamento */}
+        {clientes.length > 0 ? (
+          <>
+            <ChakraTable.ScrollArea suppressHydrationWarning borderWidth="1px" rounded="md" maxHeight="md">
+              <ChakraTable.Root size="sm" stickyHeader>
+                <ChakraTable.Header>
+                  <ChakraTable.Row bg="bg.subtle">
+                    <ChakraTable.ColumnHeader>Nome</ChakraTable.ColumnHeader>
+                    <ChakraTable.ColumnHeader>CPF</ChakraTable.ColumnHeader>
+                    <ChakraTable.ColumnHeader>Saldo</ChakraTable.ColumnHeader>
+                    <ChakraTable.ColumnHeader>Editar</ChakraTable.ColumnHeader>
+                    <ChakraTable.ColumnHeader>Excluir</ChakraTable.ColumnHeader>
+                  </ChakraTable.Row>
+                </ChakraTable.Header>
+
+                <ChakraTable.Body>
+                  {isLoading ? (
+                    // Exibe Skeletons durante o carregamento
+                    Array.from({ length: pageSize }).map((_, index) => (
+                      <ChakraTable.Row key={index}>
+                        <ChakraTable.Cell>
+                          <Skeleton height="20px" />
+                        </ChakraTable.Cell>
+                        <ChakraTable.Cell>
+                          <Skeleton height="20px" />
+                        </ChakraTable.Cell>
+                        <ChakraTable.Cell>
+                          <Skeleton height="20px" />
+                        </ChakraTable.Cell>
+                        <ChakraTable.Cell>
+                          <Skeleton height="20px" />
+                        </ChakraTable.Cell>
+                        <ChakraTable.Cell>
+                          <Skeleton height="20px" />
+                        </ChakraTable.Cell>
+                      </ChakraTable.Row>
+                    ))
+                  ) : (
+                    // Exibe dados carregados
+                    visibleClients.map((cliente) => (
+                      <ChakraTable.Row key={cliente.id}>
+                        <ChakraTable.Cell>{cliente.nome}</ChakraTable.Cell>
+                        <ChakraTable.Cell>{cliente.cpf}</ChakraTable.Cell>
+                        <ChakraTable.Cell>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(cliente.saldo))}</ChakraTable.Cell>
+                        <ChakraTable.Cell>
+                          <LinkButton colorPalette="blue" asChild>
+                            <Link href={`/clientes/editar/${cliente.id}`}>
+                              <FaPencil />
+                            </Link>
+                          </LinkButton>
+                        </ChakraTable.Cell>
+                        <ChakraTable.Cell>
+                        <DialogRoot size={"md"}>
+                          <DialogTrigger asChild>
+                            <Button colorPalette="red">
+                              <FaTrash />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>Dialog Title</DialogTitle>
+                            </DialogHeader>
+                            <DialogBody>
+                              <p>
+                              Você tem certeza que deseja excluir o cliente {cliente.nome}?
+                              </p>
+                            </DialogBody>
+                            <DialogFooter>
+                              <DialogActionTrigger asChild>
+                                <Button colorPalette="blue">Cancel</Button>
+                              </DialogActionTrigger>
+                              <Button onClick={async () => await deleteCliente(cliente.id as string)} colorPalette="red">
+                                Confirm
+                              </Button>
+                            </DialogFooter>
+                            <DialogCloseTrigger />
+                          </DialogContent>
+                        </DialogRoot>
+                        </ChakraTable.Cell>
+                      </ChakraTable.Row>
+                    ))
+                  )}
+                </ChakraTable.Body>
+              </ChakraTable.Root>
+            </ChakraTable.ScrollArea>
+
+            {/* Paginação */}
+            <HStack justifyContent="center">
+              <PaginationRoot
+                count={clientes.length}
+                pageSize={pageSize}
+                page={page}
+                onPageChange={(event) => setPage(event.page)}
+              >
+                <HStack>
+                  <PaginationPrevTrigger />
+                  <PaginationItems />
+                  <PaginationNextTrigger />
+                </HStack>
+              </PaginationRoot>
+            </HStack>
+          </>
+        ) : (
+          <EmptyState.Root h="full">
+            <EmptyState.Content h="full" w="full">
+              <EmptyState.Indicator>
+                <FaPerson />
+              </EmptyState.Indicator>
+              <VStack textAlign="center">
+                <EmptyState.Title>Não há mais clientes</EmptyState.Title>
+                <EmptyState.Description>
+                  Adicione mais clientes
+                </EmptyState.Description>
+              </VStack>
+              <ButtonGroup>
+                <LinkButton as={Link} href="/dashboard/clientes/cadastrar" variant="outline">
+                  <FaPlus />
+                  Cadastrar Clientes
+                </LinkButton>
+              </ButtonGroup>
+            </EmptyState.Content>
+          </EmptyState.Root>
+        )}
+        <Toaster />
+      </Stack>
+    </Skeleton>
   );
 };
 

@@ -31,12 +31,11 @@ import Link from "next/link";
 const TableFornecedoresGeral: React.FC = () => {
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(10);
-  const [produtos, setProdutos] = React.useState<
+  const [fornecedores, setFornecedores] = React.useState<
     {
-      id: number;
-      name: string;
-      category: string;
-      price: number;
+      id: string;
+      nome: string;
+      ramo: string;
     }[]
   >([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -44,39 +43,18 @@ const TableFornecedoresGeral: React.FC = () => {
   const [endRange, setEndRange] = React.useState(page * pageSize);
   const [visibleProducts, setVisibleProducts] = React.useState<
     {
-      id: number;
-      name: string;
-      category: string;
-      price: number;
+      id: string;
+      nome: string,
+      ramo: string,
     }[]
   >([]);
 
   const getProducts = React.useCallback(async () => {
     try {
-      const teste = [
-        { id: 1, name: "Laptop", category: "Electronics" },
-        { id: 2, name: "Coffee Maker", category: "Home Appliances" },
-        { id: 3, name: "Desk Chair", category: "Furniture" },
-        { id: 4, name: "Smartphone", category: "Electronics" },
-        { id: 5, name: "Over-Ear Headphones", category: "Accessories" },
-        { id: 6, name: "In-Ear Headphones", category: "Accessories"},
-        { id: 7, name: "Noise-Cancelling Headphones", category: "Accessories"},
-        { id: 8, name: "Wireless Earbuds", category: "Accessories"},
-        { id: 9, name: "Laptop Stand", category: "Accessories" },
-        { id: 10, name: "Bluetooth Speaker", category: "Accessories" },
-        { id: 11, name: "External Hard Drive", category: "Electronics" },
-        { id: 12, name: "Smart TV", category: "Electronics" },
-        { id: 13, name: "Gaming Console", category: "Electronics" },
-        { id: 14, name: "Refrigerator", category: "Home Appliances" },
-        { id: 15, name: "Microwave Oven", category: "Home Appliances" },
-        { id: 16, name: "Dining Table", category: "Furniture" },
-        { id: 17, name: "Office Desk", category: "Furniture" },
-        { id: 18, name: "Bookcase", category: "Furniture" },
-        { id: 19, name: "Washing Machine", category: "Home Appliances" },
-        { id: 20, name: "Portable Charger", category: "Accessories" },
-      ];
-      setProdutos(teste);
-      const visible = teste.slice(startRange, endRange);
+      const resp = await fetch("/api/fornecedores");
+      const data = await resp.json();
+      setFornecedores(data);
+      const visible = (data as Array<{ id: string; nome: string; ramo: string; }>).slice(startRange, endRange);
       setVisibleProducts(visible);
     } catch (error) {
       console.error(error);
@@ -93,8 +71,8 @@ const TableFornecedoresGeral: React.FC = () => {
 
   // Atualiza os produtos visíveis sempre que os limites ou a lista de produtos mudarem
   React.useEffect(() => {
-    setVisibleProducts(produtos.slice(startRange, endRange));
-  }, [produtos, startRange, endRange]);
+    setVisibleProducts(fornecedores.slice(startRange, endRange));
+  }, [fornecedores, startRange, endRange]);
 
   React.useEffect(() => {
     getProducts();
@@ -134,7 +112,7 @@ const TableFornecedoresGeral: React.FC = () => {
                       <IconButton
                         onClick={() => {
                           const sortedAsc = [...visibleProducts].sort((a, b) =>
-                            a.name.localeCompare(b.name)
+                            a.nome.localeCompare(b.nome)
                           );
                           setVisibleProducts(sortedAsc);
                         }}
@@ -146,7 +124,7 @@ const TableFornecedoresGeral: React.FC = () => {
                       <IconButton
                         onClick={() => {
                           const sortedDesc = [...visibleProducts].sort((a, b) =>
-                            b.name.localeCompare(a.name)
+                            b.nome.localeCompare(a.nome)
                           );
                           setVisibleProducts(sortedDesc);
                         }}
@@ -167,7 +145,7 @@ const TableFornecedoresGeral: React.FC = () => {
                       <IconButton
                         onClick={() => {
                           const sortedAsc = [...visibleProducts].sort((a, b) =>
-                            a.category.localeCompare(b.category)
+                            a.ramo.localeCompare(b.ramo)
                           );
                           setVisibleProducts(sortedAsc);
                         }}
@@ -179,7 +157,7 @@ const TableFornecedoresGeral: React.FC = () => {
                       <IconButton
                         onClick={() => {
                           const sortedDesc = [...visibleProducts].sort((a, b) =>
-                            b.category.localeCompare(a.category)
+                            b.ramo.localeCompare(a.ramo)
                           );
                           setVisibleProducts(sortedDesc);
                         }}
@@ -201,8 +179,8 @@ const TableFornecedoresGeral: React.FC = () => {
               <For each={visibleProducts}>
                 {(item) => (
                   <Table.Row key={`${item.id}-fornecedor`}>
-                    <Table.Cell>{item.name}</Table.Cell>
-                    <Table.Cell>{item.category}</Table.Cell>
+                    <Table.Cell>{item.nome}</Table.Cell>
+                    <Table.Cell>{item.ramo}</Table.Cell>
                     <Table.Cell>
                       <Button colorPalette="blue">
                         <FaPencil />
@@ -221,7 +199,7 @@ const TableFornecedoresGeral: React.FC = () => {
         </Table.ScrollArea>
         <HStack justifyContent="center">
           <PaginationRoot
-            count={produtos.length}
+            count={fornecedores.length}
             pageSize={pageSize}
             page={page}
             onPageChange={(e) => setPage(e.page)}
